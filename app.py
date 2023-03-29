@@ -2,7 +2,7 @@ import openai
 import streamlit as st
 import pinecone
 import requests
-# from streamlit_chat import message
+from streamlit_chat import message
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
@@ -12,7 +12,7 @@ DIMS = 768
 MODEL = 'gpt-3.5-turbo'
 RETRIEVER_URL = "https://retriever-model-t6p37v2uia-uw.a.run.app/"
 
-@st.experimental_singleton(show_spinner=False)
+@st.cache_resource(show_spinner=False)
 def init():
     pinecone.init(api_key=PINECONE_API_KEY, environment='us-west1-gcp')
     index = pinecone.Index(INDEX)
@@ -32,17 +32,17 @@ def generate_response(query, index):
 
     CONTENT += "\n\nFINAL ANSWER:"
 
-    # response = openai.ChatCompletion.create(
-    #     model=MODEL,
-    #     messages=[
-    #         {"role": "system", "content": "You are a patient and helpful AI safety research assistant. You use a tone that is technical and scientific."},
-    #         {"role": "user", "content": CONTENT},
-    #     ],
-    #     temperature=0,
-    # )
+    response = openai.ChatCompletion.create(
+        model=MODEL,
+        messages=[
+            {"role": "system", "content": "You are a patient and helpful AI safety research assistant. You use a tone that is technical and scientific."},
+            {"role": "user", "content": CONTENT},
+        ],
+        temperature=0,
+    )
 
-    # message = (response['choices'][0]['message']['content'])
-    return CONTENT
+    message = (response['choices'][0]['message']['content'])
+    return message
 
 st.header('Chat about AI Safety Info')
 query = st.text_input("What is your question?", value="What is AI Safety?")
@@ -50,7 +50,10 @@ query = st.text_input("What is your question?", value="What is AI Safety?")
 with st.spinner("Initializing..."):
     index = init()
 
-# message(retreiver) 
-# message("Hello bot!", is_user=True)  # align's the message to the right
+message("Hello curious user!") 
+message(query, is_user=True)  # align's the message to the right
 
-st.markdown(generate_response(query, index))
+message(generate_response(query, index)) 
+# track chat history
+# cite sources
+# st.markdown(generate_response(query, index))
