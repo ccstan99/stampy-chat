@@ -1,8 +1,12 @@
+import os
+from dotenv import load_dotenv
 import openai 
 import streamlit as st
 import pinecone
 import requests
 from streamlit_chat import message
+
+load_dotenv()
 
 st.set_page_config(
     page_title="AI Safety Q&A (early prototype)",
@@ -18,8 +22,8 @@ if 'generated' not in st.session_state:
 if 'past' not in st.session_state:
     st.session_state['past'] = []
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-PINECONE_API_KEY = st.secrets["PINECONE_API_KEY"]
+openai.api_key = os.getenv("OPENAI_API_KEY")
+PINECONE_API_KEY: str = os.getenv('PINECONE_API_KEY')
 PINECONE_INDEX = None
 FILTER = {'url': {'$ne': ''}}
 INDEX = 'alignment-lit'
