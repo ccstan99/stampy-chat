@@ -5,11 +5,11 @@ import requests
 from streamlit_chat import message
 
 st.set_page_config(
-    page_title="Chat about AI Safety - Demo",
+    page_title="Q&A on AI Safety - Demo",
     page_icon=":robot:"
 )
 
-st.header('Chat about AI Safety')
+st.header('Q&A on AI Safety')
 
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
