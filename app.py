@@ -5,11 +5,11 @@ import requests
 from streamlit_chat import message
 
 st.set_page_config(
-    page_title="Q&A on AI Safety - Demo",
+    page_title="AI Safety Q&A - Demo",
     page_icon=":robot:"
 )
 
-st.header('Q&A on AI Safety')
+st.header('AI Safety Q&A')
 
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
@@ -45,7 +45,8 @@ def generate_response(query, past_user_inputs, past_generated_responses, index):
         messages.append(  {"role": "assistant", "content": past_generated_responses[-1]} )
 
     xq = requests.post(RETRIEVER_URL, json={'query': query}).json()
-    result = index.query(xq, namespace=NAMESPACE, top_k=5, includeMetadata=True)
+    filters = {'url': {'$ne': ''}}
+    result = index.query(xq, namespace=NAMESPACE, filter=filters, top_k=5, includeMetadata=True)
     sources = {}
 
     CONTENT = PREFIX_MSG
@@ -54,8 +55,23 @@ def generate_response(query, past_user_inputs, past_generated_responses, index):
         # print("item", item)
         if item["score"] > 0.3:
             CONTENT += "\n\nCONTENT: " + item["metadata"]["text"]
-            sources[item["metadata"]["url"]] = item["metadata"]["title"]
-        # print("sources", sources)
+            print("item score:", item["score"], item["metadata"]["title"], item["metadata"]["url"])
+            if len(item["metadata"]["url"]) > 0:
+                sources[item["metadata"]["url"]] = item["metadata"]["title"]
+
+    print("sources", sources)
+    stampy_sources = []
+    non_stampy_sources = []
+    # order stampy sources 1st
+    for url, title in sources.items():
+        if 'aisafety.info' in url:
+            stampy_sources.append({'url': url, 'title': title})
+        else:
+            non_stampy_sources.append({'url': url, 'title': title})
+    print('stampy_sources', stampy_sources)
+    print('non_stampy_sources', non_stampy_sources)
+    sources_ordered = stampy_sources + non_stampy_sources
+    print('sources_ordered', sources_ordered)
 
     CONTENT += f"\n\nQUESTION: {query}"
     CONTENT += "\n\nFINAL ANSWER:"
@@ -70,15 +86,15 @@ def generate_response(query, past_user_inputs, past_generated_responses, index):
     generated_text = (response['choices'][0]['message']['content'])
     # print("\n\nmessages", messages)
     # generated_text = result["matches"][0]["metadata"]["text"]
-    return { "generated_text": generated_text, "sources": sources}
+    return { "generated_text": generated_text, "sources": sources_ordered}
 
 def format_output(result):
     output = result["generated_text"]
     if len(result["sources"]) > 0:
         output += "\n\n**Recommended reading**"
-    for url, title in result["sources"].items():
-        # output += "\n<a href='" + url +"'>" + title + "</a>"
-        output += "\n- [" + title +"](" + url + ")"
+    # list stampy resources first
+    for source in result["sources"]:
+        output += "\n- [" + source['title'] +"](" + source['url'] + ")"
     return output
 
 with st.spinner("Initializing..."):
