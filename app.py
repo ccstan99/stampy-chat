@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 st.header('AI Safety Q&A')
-st.markdown('This is a very **early prototype**. Please do not share this link widely. [Feedback](https://docs.google.com/forms/d/e/1FAIpQLSctk0DpGo3xWazfVDryz42_5aGa9A4vaCJ_W_iKGxpCGWGYkQ/viewform) welcomed!')
+st.markdown(':red[This is a very **early prototype**. Please do not share this link widely. [Feedback](https://docs.google.com/forms/d/e/1FAIpQLSctk0DpGo3xWazfVDryz42_5aGa9A4vaCJ_W_iKGxpCGWGYkQ/viewform) welcomed!]')
 
 if 'generated' not in st.session_state:
     st.session_state['generated'] = []
@@ -29,7 +29,7 @@ FILTER = {'url': {'$ne': ''}}
 INDEX = 'alignment-lit'
 NAMESPACE = 'extracted-chunks'
 DIMS = 768
-MAX_HISTORY = 2
+MAX_HISTORY = 0
 MODEL = 'gpt-3.5-turbo'
 RETRIEVER_URL = "https://retriever-model-t6p37v2uia-uw.a.run.app/"
 SYSTEM_MSG = "You are a patient and helpful AI safety research assistant. You use a tone that is technical and scientific."
@@ -104,7 +104,7 @@ def format_output(result):
 with st.spinner("Initializing..."):
     PINECONE_INDEX = init()
 
-user_input = st.text_input("What is your question?", value="What is AI Safety?")
+user_input = st.text_input("Enter your question here", value="What is AI Safety?")
 
 if user_input:
     output = generate_response(user_input, st.session_state.past, st.session_state.generated)
