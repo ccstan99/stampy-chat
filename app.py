@@ -59,9 +59,9 @@ if user_input != st.session_state.prev_input:
     # NEW_URL = CHAT_URL+'?query='+user_input+'&top_k=3'
     # print('NEW_URL', NEW_URL)
     # output = requests.get(NEW_URL).json()
+    # data['past'] = st.session_state.past
+    # data['generated'] = st.session_state.generated
     data['query'] = user_input
-    data['past'] = st.session_state.past
-    data['generated'] = st.session_state.generated
     output = requests.post(CHAT_URL, data=data).json()
 
     output = format_output(output)
