@@ -4,7 +4,6 @@ set -e
 LOCATION=us-west1
 GCLOUD_PROJECT=stampy-nlp
 CLOUD_RUN_SERVICE=stampy-chat
-# CLOUD_RUN_SERVICE=${1:-stampy-nlp} # Allow the service name to be provided as a parameter
 IMAGE=$LOCATION-docker.pkg.dev/$GCLOUD_PROJECT/cloud-run-source-deploy/$CLOUD_RUN_SERVICE
 
 # echo "Running tests:"
@@ -20,7 +19,6 @@ if [[ ! "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     exit 1
 fi
 
-GCLOUD_PROJECT=stampy-nlp
 echo
 echo "Enabling Google API"
 gcloud config set project $GCLOUD_PROJECT
@@ -29,7 +27,7 @@ gcloud services enable iam.googleapis.com
 gcloud services enable run.googleapis.com
 gcloud services enable cloudbuild.googleapis.com
 gcloud services enable logging.googleapis.com
-gcloud auth configure-docker gcr.io
+gcloud auth configure-docker us-west1-docker.pkg.dev
 
 echo "Building image"
 
@@ -41,8 +39,7 @@ echo "Deploying to Google Cloud Run"
 
 gcloud beta run deploy $CLOUD_RUN_SERVICE --image $IMAGE\:latest \
 --platform managed --no-traffic --tag=test \
---service-account=service@stampy-nlp.iam.gserviceaccount.com \
---update-secrets=PINECONE_API_KEY=PINECONE_API_KEY:latest,OPENAI_API_KEY=OPENAI_API_KEY:latest
+--service-account=service@stampy-nlp.iam.gserviceaccount.com
 
 echo
 echo "Project ID: $GCLOUD_PROJECT"
